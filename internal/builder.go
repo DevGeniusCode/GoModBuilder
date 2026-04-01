@@ -50,7 +50,19 @@ func NewModBuilder(items *ModBundleItems, packs *ModBundlePacks, projectDir stri
 	return b
 }
 
-func (b *ModBuilder) getMetadataPath(subDir, filename string) string {
+func (b *ModBuilder) getMetadataPath(gameDir string, filename string) string {
+	if gameDir == "" {
+		gameDir = b.CustomGameDir
+	}
+
+	// 1. Resolve absolute 2. Clean paths 3. Standardize slashes 4. Lowercase 5. Trim Space & Trailing Slash
+	abs, _ := filepath.Abs(filepath.Clean(gameDir))
+	normalized := strings.TrimSpace(strings.ToLower(filepath.ToSlash(abs)))
+	normalized = strings.TrimSuffix(normalized, "/")
+
+	hash := md5.Sum([]byte(normalized))
+	hashStr := hex.EncodeToString(hash[:])
+
 	exePath, err := os.Executable()
 	var cwd string
 	if err == nil {
@@ -59,10 +71,7 @@ func (b *ModBuilder) getMetadataPath(subDir, filename string) string {
 		cwd, _ = os.Getwd()
 	}
 
-	metaDir := filepath.Join(cwd, "metadata")
-	if subDir != "" {
-		metaDir = filepath.Join(metaDir, subDir)
-	}
+	metaDir := filepath.Join(cwd, "metadata", hashStr)
 	os.MkdirAll(metaDir, 0755)
 	return filepath.Join(metaDir, filename)
 }
@@ -76,7 +85,6 @@ func (b *ModBuilder) SetProjectDir(dir string) {
 	if b.Folders != nil {
 		b.SetFolders(b.Folders)
 	}
-	b.LoadBaseline()
 }
 
 func (b *ModBuilder) LoadBaseline() {
