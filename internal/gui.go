@@ -103,6 +103,8 @@ func Run(items *ModBundleItems, packs *ModBundlePacks, b *ModBuilder) {
 		mw.gameDirHistory = []string{detected}
 	}
 
+	mw.builder.SetProjectDir(mw.projectHistory[0])
+	mw.builder.CustomGameDir = mw.gameDirHistory[0]
 	mw.builder.LoadBaseline() // Load the baseline for the current game dir
 
 	if err := (declarative.MainWindow{
