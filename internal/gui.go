@@ -275,8 +275,10 @@ func Run(items *ModBundleItems, packs *ModBundlePacks, b *ModBuilder) {
 
 	mw.updatingUI = true
 
-	// Fast setup: we do NOT call mw.reDiscover() here because DiscoverConfigs
-	// already executed in main.go! Just populate the models directly.
+	// Ensure we rediscover because the saved MRU Project Dir might be different
+	// from the default directory main.go used during startup.
+	mw.reDiscover()
+
 	mw.refreshProjectModel()
 	mw.refreshGameDirModel()
 	mw.updateExeList(mw.builder.CustomGameDir)
